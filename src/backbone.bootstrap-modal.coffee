@@ -51,10 +51,6 @@
           @options.content.trigger 'ok', @
         if @options.okCloses 
           @close()
-    
-    
-
-
 
     # Creates an instance of a Bootstrap Modal
    
@@ -108,7 +104,6 @@
     # @param {Function} [cb]     Optional callback that runs only when OK is pressed.
     open: (cb) ->
       if not @isRendered then @render()
-      self = @
       $el = @$el
 
       # Create it
@@ -118,12 +113,12 @@
       , @options.modalOptions
 
       # Focus OK button
-      $el.one 'shown', -> 
-        if self.options.focusOk
+      $el.one 'shown', => 
+        if @options.focusOk
           $el.find('.btn.ok').focus()  
-        if self.options.content and self.options.content.trigger
-          self.options.content.trigger 'shown', self
-        self.trigger 'shown'    
+        if @options.content and @options.content.trigger
+          @options.content.trigger 'shown', @
+        @trigger 'shown'    
 
       # Adjust the modal and backdrop z-index; for dealing with multiple modals
       numModals = Modal.count
@@ -135,46 +130,41 @@
       @$el.css 'z-index', elIndex + numModals
 
       if @options.allowCancel
-        $backdrop.one 'click', ->
-          if self.options.content and self.options.content.trigger
-            self.options.content.trigger 'cancel', self
-          self.trigger 'cancel'
+        $backdrop.one 'click', =>
+          if @options.content and @options.content.trigger
+            @options.content.trigger 'cancel', @
+          @trigger 'cancel'
       
-        $(document).one 'keyup.dismiss.modal', (e) ->
-          e.which is 27 and self.trigger 'cancel'
+        $(document).one 'keyup.dismiss.modal', (e) =>
+          e.which is 27 and @trigger 'cancel'
 
-          if self.options.content and self.options.content.trigger
-            e.which is 27 and self.options.content.trigger 'shown', self
+          if @options.content and @options.content.trigger
+            e.which is 27 and @options.content.trigger 'shown', @
 
-      @on 'cancel', -> self.close()
+      @on 'cancel', => @close()
 
       Modal.count++
 
-      if cb then self.on 'ok', cb  # Run callback on OK if provided
+      if cb then @on 'ok', cb  # Run callback on OK if provided
       @
   
 
     # Closes the modal
     close: -> 
-      self = @
-      $el = @$el
-
       # Check if the modal should stay open
       if @_preventClose 
         @_preventClose = false
         return
 
-      $el.one 'hidden', onHidden = (e) ->
+      $el = @$el
+      $el.one 'hidden', onHidden = (e) =>
         # Ignore events propagated from interior objects, like bootstrap tooltips
         if e.target isnt e.currentTarget
           return $el.one 'hidden', onHidden
-      
-        self.remove()
-
-        if self.options.content and self.options.content.trigger
-          self.options.content.trigger 'hidden', self
-
-        self.trigger 'hidden'
+        @remove()
+        if @options.content and @options.content.trigger
+          @options.content.trigger 'hidden', @
+        @trigger 'hidden'
 
       $el.modal 'hide'
 
